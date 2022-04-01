@@ -24,12 +24,14 @@ var entryKeyboard = tgbotapi.NewReplyKeyboard(
 	),
 )
 
+// This is a function which deals with the errors.
 func errorChecking(err error) {
 	if err != nil {
 		log.Panic(err)
 	}
 }
 
+// This function handles every message that comes from the user side.
 func messageHandling(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
 		if update.Message == nil {
