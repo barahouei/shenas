@@ -32,26 +32,38 @@ func errorChecking(err error) {
 }
 
 // This function handles every message that comes from the user side.
-func messageHandling(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
-	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
+func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-
-		switch update.Message.Text {
-		case "start":
-			msg.ReplyMarkup = entryKeyboard
-		case "close":
-			msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-		}
-
-		_, err := bot.Send(msg)
-
-		errorChecking(err)
-
+	switch update.Message.Text {
+	case "start":
+		msg.Text = "خوش آمدید."
+		msg.ReplyMarkup = entryKeyboard
+	case "close":
+		msg.Text = "صفحه کلید بسته شد."
+		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	}
+
+	_, err := bot.Send(msg)
+	errorChecking(err)
+}
+
+//This function handles every command we defined in the bot.
+func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+
+	switch update.Message.Command() {
+	case "start":
+		msg.Text = "خوش آمدید."
+		msg.ReplyMarkup = entryKeyboard
+	case "close":
+		msg.Text = "صفحه کلید بسته شد."
+		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	}
+
+	_, err := bot.Send(msg)
+	errorChecking(err)
 }
 
 func main() {
@@ -67,5 +79,13 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
-	messageHandling(bot, updates)
+	for update := range updates {
+		if update.Message != nil && update.Message.IsCommand() {
+			commandHandling(bot, update)
+		} else {
+			messageHandling(bot, update)
+
+		}
+	}
+
 }
