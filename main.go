@@ -7,21 +7,19 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-var entryKeyboard = tgbotapi.NewReplyKeyboard(
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("تعیین یا ویرایش سوالات و جواب‌ها"),
+var entryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("تعیین یا ویرایش سوالات و جواب‌ها", "Q&A"),
 	),
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("مشاهده سوالات و جواب‌ها"),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("مشاهده سوالات و جواب‌ها", "Your Answers"),
 	),
-
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("جواب‌های دوست‌هات"),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("جواب‌های دوست‌هات", "Your Friends Answers"),
 	),
-
-	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("تنظیم اسم مستعار"),
-		tgbotapi.NewKeyboardButton("لینک من"),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("تنظیم اسم مستعار", "Nickname"),
+		tgbotapi.NewInlineKeyboardButtonData("لینک من", "My Link"),
 	),
 )
 
@@ -85,7 +83,6 @@ func main() {
 			commandHandling(bot, update)
 		} else {
 			messageHandling(bot, update)
-
 		}
 	}
 
