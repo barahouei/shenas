@@ -21,6 +21,7 @@ var entryKeyboard = tgbotapi.NewReplyKeyboard(
 
 	tgbotapi.NewKeyboardButtonRow(
 		tgbotapi.NewKeyboardButton("تنظیم اسم مستعار"),
+		tgbotapi.NewKeyboardButton("لینک من"),
 	),
 )
 
