@@ -65,6 +65,18 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	errorChecking(err)
 }
 
+func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
+
+	_, err := bot.Request(callback)
+	errorChecking(err)
+
+	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
+
+	_, err = bot.Send(msg)
+	errorChecking(err)
+}
+
 func main() {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	errorChecking(err)
@@ -81,6 +93,8 @@ func main() {
 	for update := range updates {
 		if update.Message != nil && update.Message.IsCommand() {
 			commandHandling(bot, update)
+		} else if update.CallbackQuery != nil {
+			callbackHandling(bot, update)
 		} else {
 			messageHandling(bot, update)
 		}
