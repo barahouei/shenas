@@ -65,6 +65,7 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	errorChecking(err)
 }
 
+//This function handles callbacks coming from the buttons.
 func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	callback := tgbotapi.NewCallback(update.CallbackQuery.ID, update.CallbackQuery.Data)
 
