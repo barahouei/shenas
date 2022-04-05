@@ -13,6 +13,8 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	switch update.Message.Command() {
 	case "start":
+		isUserExisted(update)
+
 		msg.Text = "خوش آمدید."
 		msg.ReplyMarkup = entryKeyboard
 	case "close":
