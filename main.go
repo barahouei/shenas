@@ -2,7 +2,6 @@ package main
 
 import (
 	"crypto/md5"
-	"database/sql"
 	"fmt"
 	"io"
 	"log"
@@ -13,11 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
-
-var dbName = os.Getenv("DB_NAME")
-var dbUsername = os.Getenv("DB_USERNAME")
-var dbPassword = os.Getenv("DB_PASSWORD")
-var botUsername = os.Getenv("BOT_USERNAME")
 
 var entryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	tgbotapi.NewInlineKeyboardRow(
@@ -33,18 +27,6 @@ var entryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("تنظیم اسم مستعار", "Nickname"),
 		tgbotapi.NewInlineKeyboardButtonData("لینک من", "myLink"),
 	))
-
-//This function opens a connection to the database.
-func dbConnect() *sql.DB {
-	db, err := sql.Open("mysql", dbUsername+":"+dbPassword+"@/"+dbName)
-	errorChecking(err)
-
-	log.Println("********")
-	log.Println("Connected to the database.")
-	log.Println("********")
-
-	return db
-}
 
 //This function generate an unique and reusable token which can be used as user's custom link
 //or a security approch if it was needed.
