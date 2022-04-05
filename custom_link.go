@@ -6,7 +6,7 @@ import (
 
 //This function first checks if the user already has a custom link or not,
 //if there were a custom link in database the function will return it or if there were no custom link it creates a new one and return it.
-func linkGnerator(userId int64) string {
+func linkGenerator(userId int64) string {
 	userTelegramId := userId
 
 	var noLink bool

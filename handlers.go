@@ -34,7 +34,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	switch update.CallbackQuery.Data {
 	case "myLink":
 		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
-			firstname, botUsername, linkGnerator(id))
+			firstname, botUsername, linkGenerator(id))
 		//FIXME: Pull out linkMessage to a new file
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
