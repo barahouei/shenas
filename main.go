@@ -98,7 +98,7 @@ func linkGnerator(userId int64) string {
 // This is a function which deals with the errors.
 func errorChecking(err error) {
 	if err != nil {
-		log.Panic(err)
+		log.Panic(err.Error())
 	}
 }
 
