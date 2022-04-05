@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -39,6 +40,8 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			firstname, botUsername, linkGenerator(id))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
+	case "Nickname":
+		msg.Text = "لطفا نام مستعار خود را به صورت زیر وارد کنید:\nابتدا کلمه nickname را تایپ کنید، سپس یک خط فاصله (-) بگذارید و پس از آن نام مورد نظر خود را تایپ کنید.\nمثال:\n nickname-اسم من"
 	}
 	_, err := bot.Send(msg)
 	errorChecking(err)
@@ -46,15 +49,35 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 // This function handles every message that comes from the user side.
 func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	var user user
+	user.userTelegramID = update.Message.From.ID
 
-	switch update.Message.Text {
-	case "start":
-		msg.Text = "خوش آمدید."
-		msg.ReplyMarkup = entryKeyboard
-	case "close":
-		msg.Text = "صفحه کلید بسته شد."
-		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	text := update.Message.Text
+
+	splitedText := strings.Split(text, "-")
+	leftText := splitedText[0]
+	user.nickname = splitedText[1]
+
+	if strings.Contains(text, "-") && leftText == "nickname" {
+		db := dbConnect()
+		defer db.Close()
+
+		stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
+		errorChecking(err)
+
+		res, err := stmt.Exec(user.nickname, user.userTelegramID)
+		errorChecking(err)
+
+		affect, err := res.RowsAffected()
+		errorChecking(err)
+
+		if affect > 0 {
+			doneMessage := fmt.Sprintf("نام مستعار شما به %s تغییر کرد.", user.nickname)
+			msg.Text = doneMessage
+		}
+	} else {
+		msg.Text = "لطفا دستور درستی را وارد کنید."
 	}
 
 	_, err := bot.Send(msg)
