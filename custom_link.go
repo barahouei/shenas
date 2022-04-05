@@ -17,7 +17,7 @@ func linkGenerator(userId int64) string {
 
 	//FIXME: Check if the user already existed or not, and if not add the user to the users table.
 
-	err := db.QueryRow("SELECT userlink FROM links WHERE userTelegramId=?", userTelegramId).Scan(&link)
+	err := db.QueryRow("SELECT user_link FROM links WHERE user_telegram_id=?", userTelegramId).Scan(&link)
 
 	if err != nil {
 		noLink = true
@@ -26,7 +26,7 @@ func linkGenerator(userId int64) string {
 	if noLink {
 		userLink := token()
 
-		stmt, err := db.Prepare("INSERT INTO links SET userTelegramId=?, userLink=?")
+		stmt, err := db.Prepare("INSERT INTO links SET user_telegram_id=?, user_link=?")
 		errorChecking(err)
 
 		_, err = stmt.Exec(userTelegramId, userLink)
