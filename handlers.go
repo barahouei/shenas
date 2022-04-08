@@ -300,7 +300,30 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 				tgbotapi.NewInlineKeyboardButtonData(answers[13], "q3a"+strconv.Itoa(aids[13])),
 			),
 		)
+	case "YourAnswers":
+		db := dbConnect()
+		defer db.Close()
 
+		userQA := []string{}
+		rows, err := db.Query("SELECT questions.question, answers.answer FROM `user_answers` JOIN answers ON user_answers.aid = answers.aid AND user_answers.user_telegram_id =? JOIN questions ON answers.qid = questions.qid", user.userTelegramID)
+		errorChecking(err)
+
+		for rows.Next() {
+			var question, answer string
+
+			err = rows.Scan(&question, &answer)
+			errorChecking(err)
+
+			userQA = append(userQA, question, answer)
+		}
+
+		fmt.Println(userQA)
+		var allQA string
+		for _, a := range userQA {
+			allQA += fmt.Sprintf("%s\n", a)
+		}
+
+		msg.Text = allQA
 	case "myLink":
 		user.nickname = checkNickname(user.userTelegramID)
 
