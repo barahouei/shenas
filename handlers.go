@@ -8,6 +8,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+var hasNickname bool
 var questions = make(map[int]string)
 var answers = []string{}
 var qids = []int{}
@@ -66,6 +67,26 @@ func setAnswers(userTelegramID int64, questionID int, answerID int) {
 	errorChecking(err)
 }
 
+//This finction checks if the nickname wase set it returns the nickname a sets the value of hasNickname to true.
+func checkNickname(userTelegramId int64) string {
+	user := user{}
+
+	db := dbConnect()
+	defer db.Close()
+
+	err := db.QueryRow("SELECT nickname FROM users WHERE user_telegram_id=?", userTelegramId).Scan(&user.nickname)
+	errorChecking(err)
+
+	if user.nickname == "" {
+		hasNickname = false
+	} else {
+		hasNickname = true
+	}
+
+	return user.nickname
+
+}
+
 //This function handles every command we defined in the bot.
 func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
@@ -93,7 +114,6 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	user.firstname = update.CallbackQuery.From.FirstName
 	user.lastname = update.CallbackQuery.From.LastName
 
-	//TODO: Check if the user has a nickname and show nickname instead of the firstname
 	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 
 	//FIXME: All keyboard must be dynamic.
@@ -282,12 +302,18 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		)
 
 	case "myLink":
+		user.nickname = checkNickname(user.userTelegramID)
+
+		if hasNickname {
+			user.firstname = user.nickname
+			user.lastname = ""
+		}
 		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
 			user.firstname, user.lastname, botUsername, linkGenerator(user.userTelegramID))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
 	case "Nickname":
-		msg.Text = "لطفا نام مستعار خود را به صورت زیر وارد کنید:\nابتدا کلمه nickname را تایپ کنید، سپس یک خط فاصله (-) بگذارید و پس از آن نام مورد نظر خود را تایپ کنید.\nمثال:\n nickname-اسم من"
+		msg.Text = "لطفا نام مستعار خود را به صورت زیر وارد کنید:\nابتدا کلمه nickname را تایپ کنید، سپس یک خط فاصله (-) بگذارید و پس از آن نام مورد نظر خود را تایپ کنید.\nمثال:\n nickname-اسم من\nاگر می‌خواهید نام مستعار خود را حذف کنید فقط کافی است که قسمت «اسم من» را خالی بگذارید.\nمثال:\nnickname-"
 	}
 	_, err := bot.Send(msg)
 	errorChecking(err)
