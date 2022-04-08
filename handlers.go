@@ -88,8 +88,10 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 //This function handles callbacks coming from the buttons.
 func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	id := update.CallbackQuery.From.ID
-	firstname := update.CallbackQuery.From.FirstName
+	user := user{}
+	user.userTelegramID = update.CallbackQuery.From.ID
+	user.firstname = update.CallbackQuery.From.FirstName
+
 	//TODO: Check if the user has a nickname and show nickname instead of the firstname
 	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 
@@ -121,7 +123,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[2]
 		answerWalker(2)
 
-		setAnswers(id, 1, 1)
+		setAnswers(user.userTelegramID, 1, 1)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -137,7 +139,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[2]
 		answerWalker(2)
 
-		setAnswers(id, 1, 2)
+		setAnswers(user.userTelegramID, 1, 2)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -153,7 +155,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[2]
 		answerWalker(2)
 
-		setAnswers(id, 1, 3)
+		setAnswers(user.userTelegramID, 1, 3)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -169,7 +171,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[2]
 		answerWalker(2)
 
-		setAnswers(id, 1, 4)
+		setAnswers(user.userTelegramID, 1, 4)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -185,7 +187,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[2]
 		answerWalker(2)
 
-		setAnswers(id, 1, 5)
+		setAnswers(user.userTelegramID, 1, 5)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -201,7 +203,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[2]
 		answerWalker(2)
 
-		setAnswers(id, 1, 6)
+		setAnswers(user.userTelegramID, 1, 6)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -217,7 +219,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(id, 2, 1)
+		setAnswers(user.userTelegramID, 2, 1)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -233,7 +235,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(id, 2, 2)
+		setAnswers(user.userTelegramID, 2, 2)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -249,7 +251,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(id, 2, 3)
+		setAnswers(user.userTelegramID, 2, 3)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -265,7 +267,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(id, 2, 4)
+		setAnswers(user.userTelegramID, 2, 4)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -280,7 +282,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	case "myLink":
 		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
-			firstname, botUsername, linkGenerator(id))
+			user.firstname, botUsername, linkGenerator(user.userTelegramID))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
 	case "Nickname":
