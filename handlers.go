@@ -91,6 +91,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	user := user{}
 	user.userTelegramID = update.CallbackQuery.From.ID
 	user.firstname = update.CallbackQuery.From.FirstName
+	user.lastname = update.CallbackQuery.From.LastName
 
 	//TODO: Check if the user has a nickname and show nickname instead of the firstname
 	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
@@ -281,8 +282,8 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		)
 
 	case "myLink":
-		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
-			user.firstname, botUsername, linkGenerator(user.userTelegramID))
+		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
+			user.firstname, user.lastname, botUsername, linkGenerator(user.userTelegramID))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
 	case "Nickname":
