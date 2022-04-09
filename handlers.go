@@ -240,7 +240,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(user.userTelegramID, 2, 1)
+		setAnswers(user.userTelegramID, 2, 7)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -256,7 +256,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(user.userTelegramID, 2, 2)
+		setAnswers(user.userTelegramID, 2, 8)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -272,7 +272,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(user.userTelegramID, 2, 3)
+		setAnswers(user.userTelegramID, 2, 9)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
@@ -288,7 +288,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = questions[3]
 		answerWalker(3)
 
-		setAnswers(user.userTelegramID, 2, 4)
+		setAnswers(user.userTelegramID, 2, 10)
 
 		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
 			tgbotapi.NewInlineKeyboardRow(
