@@ -374,7 +374,10 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	splitedText := strings.Split(text, "-")
 	leftText := splitedText[0]
-	user.nickname = splitedText[1]
+
+	if len(splitedText) > 1 {
+		user.nickname = splitedText[1]
+	}
 
 	if strings.Contains(text, "-") && leftText == "nickname" {
 		db := dbConnect()
