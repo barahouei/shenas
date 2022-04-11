@@ -12,6 +12,7 @@ type user struct {
 	firstname      string
 	lastname       string
 	nickname       string
+	link           string
 }
 
 //This function checks if the user is already in the database or not, and if not the function inserts the new user to the database.
@@ -24,6 +25,7 @@ func isUserExisted(update tgbotapi.Update) {
 	user.firstname = update.Message.From.FirstName
 	user.lastname = update.Message.From.LastName
 	user.nickname = ""
+	user.link = ""
 
 	var notExisted bool
 
@@ -37,10 +39,12 @@ func isUserExisted(update tgbotapi.Update) {
 	}
 
 	if notExisted {
-		stmt, err := db.Prepare("INSERT INTO users SET user_telegram_id=?, username=?, first_name=?, last_name=?, nickname=?")
+		user.link = token()
+
+		stmt, err := db.Prepare("INSERT INTO users SET user_telegram_id=?, username=?, first_name=?, last_name=?, nickname=?, link=?")
 		errorChecking(err)
 
-		res, err := stmt.Exec(user.userTelegramID, user.username, user.firstname, user.lastname, user.nickname)
+		res, err := stmt.Exec(user.userTelegramID, user.username, user.firstname, user.lastname, user.nickname, user.link)
 		errorChecking(err)
 
 		affect, err := res.RowsAffected()
