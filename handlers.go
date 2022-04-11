@@ -140,6 +140,9 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	//FIXME: After user choosed the answer the old message and inline keyboard must be removed in order to one question have one answer.
 
 	switch update.CallbackQuery.Data {
+	case "BackToEntry":
+		msg.Text = "خوش آمدید."
+		msg.ReplyMarkup = entryKeyboard
 	case "SetQ&A":
 		questionWalker()
 		answerWalker(1)
