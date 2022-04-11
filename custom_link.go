@@ -10,7 +10,6 @@ func linkGenerator(userTelegramId int64) string {
 	var user user
 	user.userTelegramID = userTelegramId
 
-	// var noLink bool
 	var link string
 
 	db := dbConnect()
