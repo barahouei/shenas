@@ -89,21 +89,40 @@ func checkNickname(userTelegramId int64) string {
 
 //This function handles every command we defined in the bot.
 func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
+	linkArgument := update.Message.CommandArguments()
+	var user user
+	var notVlidLink bool
 
-	switch update.Message.Command() {
-	case "start":
-		isUserExisted(update)
+	db := dbConnect()
+	defer db.Close()
 
-		msg.Text = "خوش آمدید."
-		msg.ReplyMarkup = entryKeyboard
-	case "close":
-		msg.Text = "صفحه کلید بسته شد."
-		msg.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+	err := db.QueryRow("SELECT user_telegram_id, first_name, last_name, nickname FROM users WHERE link=?", linkArgument).Scan(&user.userTelegramID, &user.firstname, &user.lastname, &user.nickname)
+	if err != nil {
+		notVlidLink = true
 	}
 
-	_, err := bot.Send(msg)
+	if update.Message.Command() == "start" && !notVlidLink {
+		isUserExisted(update)
+
+		if user.userTelegramID == update.Message.From.ID {
+			msg.Text = "شما از لینک خودتان وارد شده‌اید."
+			msg.ReplyMarkup = backToEntry
+		} else if user.nickname == "" {
+			msg.Text = fmt.Sprintf("سلام شما از لینک %s %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.firstname, user.lastname)
+			msg.ReplyMarkup = linkComingKeyboard
+		} else {
+			msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.nickname)
+			msg.ReplyMarkup = linkComingKeyboard
+		}
+
+	} else if update.Message.Command() == "start" {
+		isUserExisted(update)
+		msg.Text = "خوش آمدید."
+		msg.ReplyMarkup = entryKeyboard
+	}
+
+	_, err = bot.Send(msg)
 	errorChecking(err)
 }
 

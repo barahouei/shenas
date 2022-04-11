@@ -19,3 +19,18 @@ var entryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("لینک من", "myLink"),
 	),
 )
+
+var linkComingKeyboard = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("جواب دادن به سوال‌های دوستت", "ContinueAnswering"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("برگشت به منوی اصلی و تنظیم سوال‌های خودت", "EntryKeyboard"),
+	),
+)
+
+var backToEntry = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("برگشت به منوی اصلی", "BackToEntry"),
+	),
+)
