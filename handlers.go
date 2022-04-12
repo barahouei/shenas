@@ -215,6 +215,10 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			allQA += fmt.Sprintf("%s\n", a)
 		}
 
+		if allQA == "" {
+			allQA = "شما هنوز هیچ سوال و جوابی تعیین نکرده‌اید."
+		}
+
 		msg.Text = allQA
 	case "myLink":
 		user.nickname = checkNickname(user.userTelegramID)
