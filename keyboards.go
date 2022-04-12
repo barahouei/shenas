@@ -36,3 +36,20 @@ var backToEntry = tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardButtonData("برگشت به منوی اصلی", "BackToEntry"),
 	),
 )
+
+//This functions gets a map of answers and create buttons for them.
+func inlineButtons(opts map[string]string) [][]tgbotapi.InlineKeyboardButton {
+	var btns [][]tgbotapi.InlineKeyboardButton
+
+	for k, v := range opts {
+		key := "ans" + k
+		btns = append(btns, []tgbotapi.InlineKeyboardButton{
+			{
+				Text:         v,
+				CallbackData: &key,
+			},
+		})
+	}
+
+	return btns
+}

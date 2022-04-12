@@ -9,13 +9,11 @@ import (
 )
 
 var hasNickname bool
-var questions = make(map[int]string)
-var answers = []string{}
-var qids = []int{}
-var aids = []int{}
 
 //This function gets all questions and puts them in a map.
-func questionWalker() {
+func questionWalker() map[int]string {
+	var questions = make(map[int]string)
+
 	db := dbConnect()
 	defer db.Close()
 
@@ -31,10 +29,14 @@ func questionWalker() {
 
 		questions[qid] = question
 	}
+
+	return questions
 }
 
-//This function gets all answers of a question and append them to a slice of all answers.
-func answerWalker(qid int) {
+//This function gets all answers of a question and put then into a map.
+func answerWalker(qid int) map[string]string {
+	var answers = make(map[string]string)
+
 	db := dbConnect()
 	defer db.Close()
 
@@ -49,10 +51,10 @@ func answerWalker(qid int) {
 		err = aRows.Scan(&aid, &qid, &answer)
 		errorChecking(err)
 
-		answers = append(answers, answer)
-		qids = append(qids, qid)
-		aids = append(aids, aid)
+		answers[strconv.Itoa(aid)] = answer
 	}
+
+	return answers
 }
 
 //This function will add the answer to the question to the database according to IDs.
@@ -135,193 +137,61 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 
-	//FIXME: All keyboard must be dynamic.
 	//FIXME: All actions on database must be dynamic.
 	//FIXME: After user choosed the answer the old message and inline keyboard must be removed in order to one question have one answer.
+	cText := update.CallbackQuery.Data
+	var ansid string
+	if strings.Contains(cText, "ans") {
+		spl := strings.SplitAfter(cText, "ans")
+		if len(spl) > 1 {
+			ansid = spl[1]
+		}
+	}
 
 	switch update.CallbackQuery.Data {
 	case "BackToEntry":
 		msg.Text = "خوش آمدید."
 		msg.ReplyMarkup = entryKeyboard
 	case "SetQ&A":
-		questionWalker()
-		answerWalker(1)
+		var newQuestion string
 
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[0], "q1a"+strconv.Itoa(aids[0])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[1], "q1a"+strconv.Itoa(aids[1])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[2], "q1a"+strconv.Itoa(aids[2])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[3], "q1a"+strconv.Itoa(aids[3])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[4], "q1a"+strconv.Itoa(aids[4])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[5], "q1a"+strconv.Itoa(aids[5])),
-			),
-		)
+		db := dbConnect()
+		defer db.Close()
 
-		msg.Text = questions[1]
+		err := db.QueryRow("SELECT question FROM questions WHERE qid=?", 1).Scan(&newQuestion)
+		errorChecking(err)
 
-	case "q1a1":
-		msg.Text = questions[2]
-		answerWalker(2)
+		msg.Text = newQuestion
 
-		setAnswers(user.userTelegramID, 1, 1)
+		answers := answerWalker(1)
+		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{inlineButtons(answers)}
+	case "ans" + ansid:
+		var questionID int
+		var newQuestion string
+		user := user
+		user.userTelegramID = update.CallbackQuery.From.ID
 
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[6], "q2a"+strconv.Itoa(aids[6])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[7], "q2a"+strconv.Itoa(aids[7])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[8], "q2a"+strconv.Itoa(aids[8])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[9], "q2a"+strconv.Itoa(aids[9])),
-			),
-		)
-	case "q1a2":
-		msg.Text = questions[2]
-		answerWalker(2)
+		db := dbConnect()
+		defer db.Close()
 
-		setAnswers(user.userTelegramID, 1, 2)
+		aid, err := strconv.Atoi(ansid)
+		errorChecking(err)
 
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[6], "q2a"+strconv.Itoa(aids[6])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[7], "q2a"+strconv.Itoa(aids[7])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[8], "q2a"+strconv.Itoa(aids[8])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[9], "q2a"+strconv.Itoa(aids[9])),
-			),
-		)
-	case "q1a3":
-		msg.Text = questions[2]
-		answerWalker(2)
+		err = db.QueryRow("SELECT qid FROM answers WHERE aid=?", aid).Scan(&questionID)
+		errorChecking(err)
 
-		setAnswers(user.userTelegramID, 1, 3)
+		setAnswers(user.userTelegramID, questionID, aid)
 
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[6], "q2a"+strconv.Itoa(aids[6])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[7], "q2a"+strconv.Itoa(aids[7])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[8], "q2a"+strconv.Itoa(aids[8])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[9], "q2a"+strconv.Itoa(aids[9])),
-			),
-		)
-	case "q1a4":
-		msg.Text = questions[2]
-		answerWalker(2)
+		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", questionID+1).Scan(&newQuestion)
+		if err != nil {
+			msg.Text = "سوالات تمام شد، حالا می‌تونید به منوی اصلی برگردید."
+			msg.ReplyMarkup = backToEntry
+		} else {
+			msg.Text = newQuestion
 
-		setAnswers(user.userTelegramID, 1, 4)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[6], "q2a"+strconv.Itoa(aids[6])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[7], "q2a"+strconv.Itoa(aids[7])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[8], "q2a"+strconv.Itoa(aids[8])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[9], "q2a"+strconv.Itoa(aids[9])),
-			),
-		)
-	case "q1a5":
-		msg.Text = questions[2]
-		answerWalker(2)
-
-		setAnswers(user.userTelegramID, 1, 5)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[6], "q2a"+strconv.Itoa(aids[6])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[7], "q2a"+strconv.Itoa(aids[7])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[8], "q2a"+strconv.Itoa(aids[8])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[9], "q2a"+strconv.Itoa(aids[9])),
-			),
-		)
-	case "q1a6":
-		msg.Text = questions[2]
-		answerWalker(2)
-
-		setAnswers(user.userTelegramID, 1, 6)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[6], "q2a"+strconv.Itoa(aids[6])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[7], "q2a"+strconv.Itoa(aids[7])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[8], "q2a"+strconv.Itoa(aids[8])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[9], "q2a"+strconv.Itoa(aids[9])),
-			),
-		)
-	case "q2a7":
-		msg.Text = questions[3]
-		answerWalker(3)
-
-		setAnswers(user.userTelegramID, 2, 7)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[10], "q3a"+strconv.Itoa(aids[10])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[11], "q3a"+strconv.Itoa(aids[11])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[12], "q3a"+strconv.Itoa(aids[12])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[13], "q3a"+strconv.Itoa(aids[13])),
-			),
-		)
-	case "q2a8":
-		msg.Text = questions[3]
-		answerWalker(3)
-
-		setAnswers(user.userTelegramID, 2, 8)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[10], "q3a"+strconv.Itoa(aids[10])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[11], "q3a"+strconv.Itoa(aids[11])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[12], "q3a"+strconv.Itoa(aids[12])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[13], "q3a"+strconv.Itoa(aids[13])),
-			),
-		)
-	case "q2a9":
-		msg.Text = questions[3]
-		answerWalker(3)
-
-		setAnswers(user.userTelegramID, 2, 9)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[10], "q3a"+strconv.Itoa(aids[10])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[11], "q3a"+strconv.Itoa(aids[11])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[12], "q3a"+strconv.Itoa(aids[12])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[13], "q3a"+strconv.Itoa(aids[13])),
-			),
-		)
-	case "q2a10":
-		msg.Text = questions[3]
-		answerWalker(3)
-
-		setAnswers(user.userTelegramID, 2, 10)
-
-		msg.ReplyMarkup = tgbotapi.NewInlineKeyboardMarkup(
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[10], "q3a"+strconv.Itoa(aids[10])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[11], "q3a"+strconv.Itoa(aids[11])),
-			),
-			tgbotapi.NewInlineKeyboardRow(
-				tgbotapi.NewInlineKeyboardButtonData(answers[12], "q3a"+strconv.Itoa(aids[12])),
-				tgbotapi.NewInlineKeyboardButtonData(answers[13], "q3a"+strconv.Itoa(aids[13])),
-			),
-		)
+			answers := answerWalker(questionID + 1)
+			msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{inlineButtons(answers)}
+		}
 	case "YourAnswers":
 		db := dbConnect()
 		defer db.Close()
