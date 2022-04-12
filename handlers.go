@@ -209,7 +209,6 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			userQA = append(userQA, question, answer)
 		}
 
-		fmt.Println(userQA)
 		var allQA string
 		for _, a := range userQA {
 			allQA += fmt.Sprintf("%s\n", a)
