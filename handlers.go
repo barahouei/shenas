@@ -276,11 +276,15 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		if affect > 0 {
 			doneMessage := fmt.Sprintf("نام مستعار شما به %s تغییر کرد.", user.nickname)
 			msg.Text = doneMessage
+			msg.ReplyMarkup = backToEntry
 		}
 	} else {
 		msg.Text = "لطفا دستور درستی را وارد کنید."
+		msg.ReplyMarkup = backToEntry
 	}
 
-	_, err := bot.Send(msg)
+	_, err := bot.Request(tgbotapi.NewDeleteMessage(update.Message.Chat.ID, update.Message.MessageID))
+	errorChecking(err)
+	_, err = bot.Send(msg)
 	errorChecking(err)
 }
