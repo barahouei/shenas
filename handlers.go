@@ -326,7 +326,8 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", questionID+1).Scan(&newQuestion)
 		if err != nil {
 			var rightAnswers int
-			err = db.QueryRow("SELECT COUNT(friend_answers.aid) FROM friend_answers JOIN user_answers ON user_answers.aid = friend_answers.aid AND friend_answers.friend_telegram_id=?", friendTelegramID).Scan(&rightAnswers)
+
+			err = db.QueryRow("SELECT COUNT(friend_answers.aid) FROM friend_answers JOIN user_answers ON user_answers.user_telegram_id = friend_answers.friend_telegram_id AND friend_answers.aid = user_answers.aid AND user_answers.user_telegram_id=?", friendTelegramID).Scan(&rightAnswers)
 			errorChecking(err)
 
 			msg.Text = fmt.Sprintf("سوالات تمام شد و شما به %d سوال جواب درست دادید.", rightAnswers)
