@@ -317,6 +317,22 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 			msg.Text = fmt.Sprintf("سوالات تمام شد و شما به %d سوال جواب درست دادید.", rightAnswers)
 			msg.ReplyMarkup = backToEntry
+
+			var name string
+			if user.lastname == "" {
+				name = user.firstname
+			} else {
+				name = user.firstname + " " + user.lastname
+			}
+
+			user.nickname = checkNickname(user.userTelegramID)
+
+			if hasNickname {
+				name = user.nickname
+			}
+
+			finishMessage := fmt.Sprintf("دوست شما %s به %dتا از سوال‌های شما جواب درست داد.", name, rightAnswers)
+			bot.Request(tgbotapi.NewMessage(friendTelegramID, finishMessage))
 		} else {
 			msg.Text = newQuestion
 
