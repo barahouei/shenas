@@ -285,13 +285,14 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 				resetMessage := "نام مستعار شما حذف شد."
 				msg.Text = resetMessage
 				msg.ReplyMarkup = backToEntry
-				fmt.Println(resetNickname)
 			} else {
 				doneMessage := fmt.Sprintf("نام مستعار شما به %s تغییر کرد.", user.nickname)
 				msg.Text = doneMessage
 				msg.ReplyMarkup = backToEntry
-				fmt.Println(resetNickname)
 			}
+		} else {
+			msg.Text = "شما هنوز نام مستعاری برای خود تنظیم نکرده‌اید."
+			msg.ReplyMarkup = backToEntry
 		}
 	} else {
 		msg.Text = "لطفا دستور درستی را وارد کنید."
