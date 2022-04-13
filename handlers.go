@@ -214,8 +214,11 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			allQA += fmt.Sprintf("%s\n", a)
 		}
 
+		showMsg := "این شما و این جواب‌هایی که به سوالات مختلف دادید.\n\n"
 		if allQA == "" {
 			allQA = "شما هنوز هیچ سوال و جوابی تعیین نکرده‌اید."
+		} else {
+			allQA = showMsg + allQA
 		}
 
 		msg.Text = allQA
