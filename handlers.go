@@ -122,8 +122,14 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		isUserExisted(update)
 		msg.Text = "خوش آمدید."
 		msg.ReplyMarkup = entryKeyboard
+	} else {
+		isUserExisted(update)
+		msg.Text = "لطفا دستور درستی را وارد کنید."
+		msg.ReplyMarkup = backToEntry
 	}
 
+	_, err = bot.Request(tgbotapi.NewDeleteMessage(update.Message.Chat.ID, update.Message.MessageID))
+	errorChecking(err)
 	_, err = bot.Send(msg)
 	errorChecking(err)
 }
