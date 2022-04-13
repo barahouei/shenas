@@ -20,10 +20,10 @@ var entryKeyboard = tgbotapi.NewInlineKeyboardMarkup(
 	),
 )
 
-func linkComingKeyboard() tgbotapi.InlineKeyboardMarkup {
+func linkComingKeyboard(userTelegramID string) tgbotapi.InlineKeyboardMarkup {
 	return tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("جواب دادن به سوال‌های دوستت", "ContinueAnswering"),
+			tgbotapi.NewInlineKeyboardButtonData("جواب دادن به سوال‌های دوستت", "ContinueAnswering-"+userTelegramID),
 		),
 		tgbotapi.NewInlineKeyboardRow(
 			tgbotapi.NewInlineKeyboardButtonData("برگشت به منوی اصلی و تنظیم سوال‌های خودت", "BackToEntry"),
@@ -43,6 +43,23 @@ func inlineButtons(opts map[string]string) [][]tgbotapi.InlineKeyboardButton {
 
 	for k, v := range opts {
 		key := "ans" + k
+		btns = append(btns, []tgbotapi.InlineKeyboardButton{
+			{
+				Text:         v,
+				CallbackData: &key,
+			},
+		})
+	}
+
+	return btns
+}
+
+//This functions gets a map of answers and friends telegram ID and create buttons for them.
+func friendInlineButtons(answers map[string]string, telegramID string) [][]tgbotapi.InlineKeyboardButton {
+	var btns [][]tgbotapi.InlineKeyboardButton
+
+	for k, v := range answers {
+		key := "friend-" + telegramID + "-" + k
 		btns = append(btns, []tgbotapi.InlineKeyboardButton{
 			{
 				Text:         v,

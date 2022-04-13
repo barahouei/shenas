@@ -69,6 +69,18 @@ func setAnswers(userTelegramID int64, questionID int, answerID int) {
 	errorChecking(err)
 }
 
+//This function will add the friend answers to the friend table in the database according to IDs.
+func setFriendAnswers(userTelegramID int64, friendTelegramID int64, questionID int, answerID int) {
+	db := dbConnect()
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO friend_answers SET user_telegram_id=?, friend_telegram_id=?, qid=?, aid=?")
+	errorChecking(err)
+
+	_, err = stmt.Exec(userTelegramID, friendTelegramID, questionID, answerID)
+	errorChecking(err)
+}
+
 //This finction checks if the nickname wase set it returns the nickname a sets the value of hasNickname to true.
 func checkNickname(userTelegramId int64) string {
 	user := user{}
@@ -104,6 +116,8 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		notVlidLink = true
 	}
 
+	telegramID := strconv.Itoa(int(user.userTelegramID))
+
 	if update.Message.Command() == "start" && !notVlidLink {
 		isUserExisted(update)
 
@@ -112,10 +126,10 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			msg.ReplyMarkup = backToEntry
 		} else if user.nickname == "" {
 			msg.Text = fmt.Sprintf("سلام شما از لینک %s %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.firstname, user.lastname)
-			msg.ReplyMarkup = linkComingKeyboard()
+			msg.ReplyMarkup = linkComingKeyboard(telegramID)
 		} else {
 			msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.nickname)
-			msg.ReplyMarkup = linkComingKeyboard()
+			msg.ReplyMarkup = linkComingKeyboard(telegramID)
 		}
 
 	} else if update.Message.Command() == "start" {
@@ -144,13 +158,34 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Data)
 
 	//FIXME: All actions on database must be dynamic.
-	//FIXME: After user choosed the answer the old message and inline keyboard must be removed in order to one question have one answer.
+
 	cText := update.CallbackQuery.Data
+
 	var ansid string
 	if strings.Contains(cText, "ans") {
 		spl := strings.SplitAfter(cText, "ans")
 		if len(spl) > 1 {
 			ansid = spl[1]
+		}
+	}
+
+	var friendID string
+	if strings.Contains(cText, "ContinueAnswering") {
+		splitID := strings.Split(cText, "-")
+		if len(splitID) > 1 {
+			friendID = splitID[1]
+		}
+	}
+
+	if strings.Contains(cText, "friend") {
+		splited := strings.Split(cText, "-")
+
+		if len(splited) > 1 {
+			friendID = splited[1]
+		}
+
+		if len(splited) > 2 {
+			ansid = splited[2]
 		}
 	}
 
@@ -241,6 +276,49 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
 		msg.ReplyMarkup = backToEntry
+	case "ContinueAnswering-" + friendID:
+		var newQuestion string
+
+		db := dbConnect()
+		defer db.Close()
+
+		err := db.QueryRow("SELECT question FROM questions WHERE qid=?", 1).Scan(&newQuestion)
+		errorChecking(err)
+
+		msg.Text = newQuestion
+
+		answers := answerWalker(1)
+		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendInlineButtons(answers, friendID)}
+	case "friend-" + friendID + "-" + ansid:
+		var questionID int
+		var newQuestion string
+		user := user
+		user.userTelegramID = update.CallbackQuery.From.ID
+		fID, err := strconv.Atoi(friendID)
+		errorChecking(err)
+		friendTelegramID := int64(fID)
+
+		db := dbConnect()
+		defer db.Close()
+
+		aid, err := strconv.Atoi(ansid)
+		errorChecking(err)
+
+		err = db.QueryRow("SELECT qid FROM answers WHERE aid=?", aid).Scan(&questionID)
+		errorChecking(err)
+
+		setFriendAnswers(user.userTelegramID, friendTelegramID, questionID, aid)
+
+		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", questionID+1).Scan(&newQuestion)
+		if err != nil {
+			msg.Text = "سوالات تمام شد، حالا می‌تونید به منوی اصلی برگردید."
+			msg.ReplyMarkup = backToEntry
+		} else {
+			msg.Text = newQuestion
+
+			answers := answerWalker(questionID + 1)
+			msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendInlineButtons(answers, friendID)}
+		}
 	case "Nickname":
 		msg.Text = "لطفا نام مستعار خود را به صورت زیر وارد کنید:\nابتدا کلمه nickname را تایپ کنید، سپس یک خط فاصله (-) بگذارید و پس از آن نام مورد نظر خود را تایپ کنید.\nمثال:\n nickname-اسم من\nاگر می‌خواهید نام مستعار خود را حذف کنید فقط کافی است که قسمت «اسم من» را خالی بگذارید.\nمثال:\nnickname-"
 		msg.ReplyMarkup = backToEntry
