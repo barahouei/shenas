@@ -265,14 +265,20 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = allQA
 		msg.ReplyMarkup = backToEntry
 	case "myLink":
+		var name string
+		if user.lastname == "" {
+			name = user.firstname
+		} else {
+			name = user.firstname + " " + user.lastname
+		}
+
 		user.nickname = checkNickname(user.userTelegramID)
 
 		if hasNickname {
-			user.firstname = user.nickname
-			user.lastname = ""
+			name = user.nickname
 		}
-		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
-			user.firstname, user.lastname, botUsername, linkGenerator(user.userTelegramID))
+		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
+			name, botUsername, linkGenerator(user.userTelegramID))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
 		msg.ReplyMarkup = backToEntry
