@@ -219,6 +219,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 
 		msg.Text = allQA
+		msg.ReplyMarkup = backToEntry
 	case "myLink":
 		user.nickname = checkNickname(user.userTelegramID)
 
@@ -230,10 +231,14 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			user.firstname, user.lastname, botUsername, linkGenerator(user.userTelegramID))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
+		msg.ReplyMarkup = backToEntry
 	case "Nickname":
 		msg.Text = "لطفا نام مستعار خود را به صورت زیر وارد کنید:\nابتدا کلمه nickname را تایپ کنید، سپس یک خط فاصله (-) بگذارید و پس از آن نام مورد نظر خود را تایپ کنید.\nمثال:\n nickname-اسم من\nاگر می‌خواهید نام مستعار خود را حذف کنید فقط کافی است که قسمت «اسم من» را خالی بگذارید.\nمثال:\nnickname-"
+		msg.ReplyMarkup = backToEntry
 	}
-	_, err := bot.Send(msg)
+	_, err := bot.Request(tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID))
+	errorChecking(err)
+	_, err = bot.Send(msg)
 	errorChecking(err)
 }
 
