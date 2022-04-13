@@ -249,6 +249,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var user user
 	user.userTelegramID = update.Message.From.ID
+	var resetNickname bool
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 	text := update.Message.Text
@@ -258,6 +259,12 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	if len(splitedText) > 1 {
 		user.nickname = splitedText[1]
+	}
+
+	if user.nickname == "" {
+		resetNickname = true
+	} else {
+		resetNickname = false
 	}
 
 	if strings.Contains(text, "-") && leftText == "nickname" {
@@ -274,9 +281,17 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		errorChecking(err)
 
 		if affect > 0 {
-			doneMessage := fmt.Sprintf("نام مستعار شما به %s تغییر کرد.", user.nickname)
-			msg.Text = doneMessage
-			msg.ReplyMarkup = backToEntry
+			if resetNickname {
+				resetMessage := "نام مستعار شما حذف شد."
+				msg.Text = resetMessage
+				msg.ReplyMarkup = backToEntry
+				fmt.Println(resetNickname)
+			} else {
+				doneMessage := fmt.Sprintf("نام مستعار شما به %s تغییر کرد.", user.nickname)
+				msg.Text = doneMessage
+				msg.ReplyMarkup = backToEntry
+				fmt.Println(resetNickname)
+			}
 		}
 	} else {
 		msg.Text = "لطفا دستور درستی را وارد کنید."
