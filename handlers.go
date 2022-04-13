@@ -125,7 +125,15 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			msg.Text = "شما از لینک خودتان وارد شده‌اید."
 			msg.ReplyMarkup = backToEntry
 		} else if user.nickname == "" {
-			msg.Text = fmt.Sprintf("سلام شما از لینک %s %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.firstname, user.lastname)
+			var name string
+
+			if user.lastname == "" {
+				name = user.firstname
+			} else {
+				name = user.firstname + " " + user.lastname
+			}
+
+			msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", name)
 			msg.ReplyMarkup = linkComingKeyboard(telegramID)
 		} else {
 			msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.nickname)
