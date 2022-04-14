@@ -36,7 +36,8 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 			var isAnswered bool
 
-			err := db.QueryRow("SELECT is_answered FROM check_is_friend_answered WHERE friend_telegram_id=?", user.userTelegramID).Scan(&isAnswered)
+			id := update.Message.From.ID
+			err := db.QueryRow("SELECT is_answered FROM check_is_friend_answered WHERE user_telegram_id=? AND friend_telegram_id=?", id, user.userTelegramID).Scan(&isAnswered)
 			if err != nil {
 				isAnswered = false
 			}
