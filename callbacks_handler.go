@@ -59,7 +59,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	switch update.CallbackQuery.Data {
 	case "BackToEntry":
-		msg.Text = "خوش آمدید."
+		msg.Text = "به شناس خوش آمدی."
 		msg.ReplyMarkup = entryKeyboard
 	case "SetQ&A":
 		db := dbConnect()
