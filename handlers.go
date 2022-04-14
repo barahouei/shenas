@@ -214,6 +214,14 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 	}
 
+	if strings.Contains(cText, "friendAnswers") {
+		splited := strings.Split(cText, "-")
+
+		if len(splited) > 1 {
+			friendID = splited[1]
+		}
+	}
+
 	switch update.CallbackQuery.Data {
 	case "BackToEntry":
 		msg.Text = "خوش آمدید."
@@ -330,6 +338,47 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		msg.Text = "این‌ها دوستانی هستند که تا حالا به سوال‌های شما جواب دادن، برای دیدن جواب‌های هر کدوم می‌تونید انتخابش کنید."
 		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendsAnswersButtons(fl)}
+	case "friendAnswers-" + friendID:
+		db := dbConnect()
+		defer db.Close()
+
+		userQA := []string{}
+		rows, err := db.Query("SELECT questions.question, answers.answer FROM friend_answers JOIN answers ON friend_answers.aid = answers.aid AND friend_answers.friend_telegram_id =? AND friend_answers.user_telegram_id=? JOIN questions ON answers.qid = questions.qid", user.userTelegramID, friendID)
+		errorChecking(err)
+
+		for rows.Next() {
+			var question, answer string
+
+			err = rows.Scan(&question, &answer)
+			errorChecking(err)
+
+			userQA = append(userQA, question, answer)
+		}
+
+		var allQA string
+		for _, a := range userQA {
+			allQA += fmt.Sprintf("%s\n", a)
+		}
+
+		err = db.QueryRow("SELECT first_name, last_name, nickname FROM users WHERE user_telegram_id=?", friendID).Scan(&user.firstname, &user.lastname, &user.nickname)
+		errorChecking(err)
+
+		var name string
+		if user.lastname == "" {
+			name = user.firstname
+		} else {
+			name = user.firstname + " " + user.lastname
+		}
+
+		if user.nickname != "" {
+			name = user.nickname
+		}
+
+		showMsg := fmt.Sprintf("دوستت %s این جواب‌ها رو به سوال‌های شما داده.\n\n", name)
+		allQA = showMsg + allQA
+
+		msg.Text = allQA
+		msg.ReplyMarkup = backToEntry
 	case "myLink":
 		var name string
 		if user.lastname == "" {
