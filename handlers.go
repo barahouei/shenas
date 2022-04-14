@@ -130,7 +130,7 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 			var isAnswered bool
 
-			err := db.QueryRow("SELECT is_answered FROM check_is_answered WHERE friend_telegram_id=?", user.userTelegramID).Scan(&isAnswered)
+			err := db.QueryRow("SELECT is_answered FROM check_is_friend_answered WHERE friend_telegram_id=?", user.userTelegramID).Scan(&isAnswered)
 			if err != nil {
 				isAnswered = false
 			}
@@ -457,7 +457,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			bot.Request(tgbotapi.NewMessage(friendTelegramID, finishMessage))
 
 			isAnswered := true
-			stmt, err := db.Prepare("INSERT INTO check_is_answered SET user_telegram_id=?, friend_telegram_id=?, is_answered=?")
+			stmt, err := db.Prepare("INSERT INTO check_is_friend_answered SET user_telegram_id=?, friend_telegram_id=?, is_answered=?")
 			errorChecking(err)
 
 			_, err = stmt.Exec(user.userTelegramID, friendTelegramID, isAnswered)
