@@ -290,20 +290,28 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.ReplyMarkup = backToEntry
 	case "ContinueAnswering-" + friendID:
 		var newQuestion string
+		var qid int
+		var numberOfQuestions int
 
 		db := dbConnect()
 		defer db.Close()
 
-		err := db.QueryRow("SELECT question FROM questions WHERE qid=?", 1).Scan(&newQuestion)
+		err := db.QueryRow("SELECT qid, question FROM questions WHERE qid=?", 1).Scan(&qid, &newQuestion)
 		errorChecking(err)
 
-		msg.Text = newQuestion
+		err = db.QueryRow("SELECT COUNT(qid) FROM questions").Scan(&numberOfQuestions)
+		errorChecking(err)
+
+		questionMessage := fmt.Sprintf("سوال %d از مجموع %d سوال:\n%s", qid, numberOfQuestions, newQuestion)
+		msg.Text = questionMessage
 
 		answers := answerWalker(1)
 		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendInlineButtons(answers, friendID)}
 	case "friend-" + friendID + "-" + ansid:
 		var questionID int
 		var newQuestion string
+		var qid int
+		var numberOfQuestions int
 		user := user
 		user.userTelegramID = update.CallbackQuery.From.ID
 		fID, err := strconv.Atoi(friendID)
@@ -321,7 +329,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		setFriendAnswers(user.userTelegramID, friendTelegramID, questionID, aid)
 
-		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", questionID+1).Scan(&newQuestion)
+		err = db.QueryRow("SELECT qid, question FROM questions WHERE qid=?", questionID+1).Scan(&qid, &newQuestion)
 		if err != nil {
 			var rightAnswers int
 
@@ -354,7 +362,11 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			_, err = stmt.Exec(user.userTelegramID, friendTelegramID, isAnswered)
 			errorChecking(err)
 		} else {
-			msg.Text = newQuestion
+			err = db.QueryRow("SELECT COUNT(qid) FROM questions").Scan(&numberOfQuestions)
+			errorChecking(err)
+
+			questionMessage := fmt.Sprintf("سوال %d از مجموع %d سوال:\n%s", qid, numberOfQuestions, newQuestion)
+			msg.Text = questionMessage
 
 			answers := answerWalker(questionID + 1)
 			msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendInlineButtons(answers, friendID)}
