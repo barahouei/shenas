@@ -92,20 +92,56 @@ func inlineButtons(opts map[string]string) [][]tgbotapi.InlineKeyboardButton {
 
 //This functions gets a map of answers and friends telegram ID and create buttons for them.
 func friendInlineButtons(answers map[string]string, telegramID string) [][]tgbotapi.InlineKeyboardButton {
-	var btns [][]tgbotapi.InlineKeyboardButton
+	var rows [][]tgbotapi.InlineKeyboardButton
+	var btn []tgbotapi.InlineKeyboardButton
+	i := 1
+	q := 1
 
 	for k, v := range answers {
+		j := len(answers)
 		key := "friend-" + telegramID + "-" + k
-		btns = append(btns, []tgbotapi.InlineKeyboardButton{
-			{
-				Text:         v,
-				CallbackData: &key,
-			},
-		})
+
+		btn = append(btn, tgbotapi.NewInlineKeyboardButtonData(v, key))
+
+		if i == 2 {
+			rows = append(rows, btn)
+
+			btn = []tgbotapi.InlineKeyboardButton{}
+			i = 0
+		}
+
+		if j-q == 1 {
+			rows = append(rows, btn)
+			btn = []tgbotapi.InlineKeyboardButton{}
+		}
+
+		if j-q == 0 {
+			rows = append(rows, btn)
+			btn = []tgbotapi.InlineKeyboardButton{}
+		}
+		i++
+		q++
 	}
 
-	return btns
+	return rows
 }
+
+// //This functions gets a map of answers and friends telegram ID and create buttons for them.
+// func friendInlineButtons(answers map[string]string, telegramID string) [][]tgbotapi.InlineKeyboardButton {
+// 	var btns [][]tgbotapi.InlineKeyboardButton
+
+// 	for k, v := range answers {
+// 		key := "friend-" + telegramID + "-" + k
+// 		btns = append(btns, []tgbotapi.InlineKeyboardButton{
+// 			{
+// 				Text:         v,
+// 				CallbackData: &key,
+// 			},
+// 		})
+// 	}
+
+// 	return btns
+// }
 
 //This functions gets a map of friends telegram ID and create buttons for them.
 func friendsAnswersButtons(friendsList map[string]string) [][]tgbotapi.InlineKeyboardButton {
