@@ -42,8 +42,15 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 				isAnswered = false
 			}
 
+			var isFriendAnswered bool
+			err = db.QueryRow("SELECT is_answered FROM check_is_user_answered WHERE user_telegram_id=?", user.userTelegramID).Scan(&isFriendAnswered)
+			errorChecking(err)
+
 			if isAnswered {
 				msg.Text = "شما قبلا به سوال‌های این دوستتان جواب داده‌اید."
+				msg.ReplyMarkup = backToEntry
+			} else if !isFriendAnswered {
+				msg.Text = "دوستت هنوز سوال و جوابی تعیین نکرده."
 				msg.ReplyMarkup = backToEntry
 			} else {
 				if user.nickname == "" {
