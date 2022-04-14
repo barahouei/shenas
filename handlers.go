@@ -227,12 +227,44 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = "خوش آمدید."
 		msg.ReplyMarkup = entryKeyboard
 	case "SetQ&A":
-		var newQuestion string
-
 		db := dbConnect()
 		defer db.Close()
 
-		err := db.QueryRow("SELECT question FROM questions WHERE qid=?", 1).Scan(&newQuestion)
+		var isAnswered bool
+		err := db.QueryRow("SELECT is_answered FROM check_is_user_answered WHERE user_telegram_id=?", user.userTelegramID).Scan(&isAnswered)
+		if err != nil {
+			isAnswered = false
+		}
+
+		if isAnswered {
+			stmt, err := db.Prepare("DELETE FROM user_answers WHERE user_telegram_id=?")
+			errorChecking(err)
+
+			_, err = stmt.Exec(user.userTelegramID)
+			errorChecking(err)
+
+			stmt, err = db.Prepare("DELETE FROM friend_answers WHERE friend_telegram_id=?")
+			errorChecking(err)
+
+			_, err = stmt.Exec(user.userTelegramID)
+			errorChecking(err)
+
+			stmt, err = db.Prepare("DELETE FROM check_is_friend_answered WHERE friend_telegram_id=?")
+			errorChecking(err)
+
+			_, err = stmt.Exec(user.userTelegramID)
+			errorChecking(err)
+
+			stmt, err = db.Prepare("UPDATE check_is_user_answered SET is_answered=? WHERE user_telegram_id=?")
+			errorChecking(err)
+
+			isAnswered = false
+			_, err = stmt.Exec(isAnswered, user.userTelegramID)
+			errorChecking(err)
+		}
+		var newQuestion string
+
+		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", 1).Scan(&newQuestion)
 		errorChecking(err)
 
 		msg.Text = newQuestion
@@ -260,6 +292,13 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		if err != nil {
 			msg.Text = "سوالات تمام شد، حالا می‌تونید به منوی اصلی برگردید."
 			msg.ReplyMarkup = backToEntry
+
+			stmt, err := db.Prepare("UPDATE check_is_user_answered SET is_answered=? WHERE user_telegram_id=?")
+			errorChecking(err)
+
+			isAnswered := true
+			_, err = stmt.Exec(isAnswered, user.userTelegramID)
+			errorChecking(err)
 		} else {
 			msg.Text = newQuestion
 

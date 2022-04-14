@@ -50,6 +50,13 @@ func isUserExisted(update tgbotapi.Update) {
 		affect, err := res.RowsAffected()
 		errorChecking(err)
 
+		stmt, err = db.Prepare("INSERT INTO check_is_user_answered SET user_telegram_id=?, is_answered=?")
+		errorChecking(err)
+
+		isAnswered := false
+		_, err = stmt.Exec(user.userTelegramID, isAnswered)
+		errorChecking(err)
+
 		if affect > 0 {
 			log.Println("********")
 			log.Println("Inserting user successfully done!")
