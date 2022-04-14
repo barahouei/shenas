@@ -44,20 +44,20 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		if affect > 0 {
 			if resetNickname {
-				resetMessage := "نام مستعار شما حذف شد."
+				resetMessage := "اسم مستعارت حذف شد."
 				msg.Text = resetMessage
 				msg.ReplyMarkup = backToEntry
 			} else {
-				doneMessage := fmt.Sprintf("نام مستعار شما به %s تغییر کرد.", user.nickname)
+				doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
 				msg.Text = doneMessage
 				msg.ReplyMarkup = backToEntry
 			}
 		} else {
-			msg.Text = "شما هنوز نام مستعاری برای خود تنظیم نکرده‌اید."
+			msg.Text = "هنوز اسم مستعاری برای خودت تعیین نکردی که بخوای حذفش کنی."
 			msg.ReplyMarkup = backToEntry
 		}
 	} else {
-		msg.Text = "لطفا دستور درستی را وارد کنید."
+		msg.Text = "دستوری که وارد کردی اشتباست، شاید حرفی رو بزرگ و کوچیک وارد کردی یا جاانداختی."
 		msg.ReplyMarkup = backToEntry
 	}
 

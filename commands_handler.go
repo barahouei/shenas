@@ -28,7 +28,7 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		isUserExisted(update)
 
 		if user.userTelegramID == update.Message.From.ID {
-			msg.Text = "شما از لینک خودتان وارد شده‌اید."
+			msg.Text = "ظاهرا از لینک خودت وارد شدی."
 			msg.ReplyMarkup = backToEntry
 		} else {
 			db := dbConnect()
@@ -47,7 +47,7 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			errorChecking(err)
 
 			if isAnswered {
-				msg.Text = "شما قبلا به سوال‌های این دوستتان جواب داده‌اید."
+				msg.Text = "مثل این که قبلا به سوال‌های این دوستت جواب دادی و تا وقتی که دوستت جواب‌هاش رو ویرایش نکنه نمی‌تونی دوباره به سوال‌هاش جواب بدی."
 				msg.ReplyMarkup = backToEntry
 			} else if !isFriendAnswered {
 				msg.Text = "دوستت هنوز سوال و جوابی تعیین نکرده."
@@ -62,10 +62,10 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 						name = user.firstname + " " + user.lastname
 					}
 
-					msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", name)
+					msg.Text = fmt.Sprintf("سلام به شناس خوش آمدی.\nبرای جواب دادن به سوال‌های دوستت %s می‌تونی گزینه اول رو انتخاب کنی و یا اینکه با انتخاب گزینه دوم به منوی اصلی بری و سوال و جواب‌های خودت رو تعیین کنی.", name)
 					msg.ReplyMarkup = linkComingKeyboard(telegramID)
 				} else {
-					msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.nickname)
+					msg.Text = fmt.Sprintf("سلام به شناس خوش آمدی.\nبرای جواب دادن به سوال‌های دوستت %s می‌تونی گزینه اول رو انتخاب کنی و یا اینکه با انتخاب گزینه دوم به منوی اصلی بری و سوال و جواب‌های خودت رو تعیین کنی.", user.nickname)
 					msg.ReplyMarkup = linkComingKeyboard(telegramID)
 				}
 			}
@@ -73,11 +73,11 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 	} else if update.Message.Command() == "start" {
 		isUserExisted(update)
-		msg.Text = "خوش آمدید."
+		msg.Text = "به شناس خوش آمدی."
 		msg.ReplyMarkup = entryKeyboard
 	} else {
 		isUserExisted(update)
-		msg.Text = "لطفا دستور درستی را وارد کنید."
+		msg.Text = "دستوری که وارد کردی اشتباست، شاید حرفی رو بزرگ و کوچیک وارد کردی یا جاانداختی."
 		msg.ReplyMarkup = backToEntry
 	}
 
