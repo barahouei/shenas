@@ -157,21 +157,25 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		defer db.Close()
 
 		userQA := []string{}
-		rows, err := db.Query("SELECT questions.question, answers.answer FROM `user_answers` JOIN answers ON user_answers.aid = answers.aid AND user_answers.user_telegram_id =? JOIN questions ON answers.qid = questions.qid", user.userTelegramID)
+		rows, err := db.Query("SELECT questions.qid, questions.question, answers.answer FROM `user_answers` JOIN answers ON user_answers.aid = answers.aid AND user_answers.user_telegram_id =? JOIN questions ON answers.qid = questions.qid", user.userTelegramID)
 		errorChecking(err)
 
 		for rows.Next() {
 			var question, answer string
+			var qid int
 
-			err = rows.Scan(&question, &answer)
+			err = rows.Scan(&qid, &question, &answer)
 			errorChecking(err)
+
+			question = fmt.Sprintf("سوال %d: %s\n", qid, question)
+			answer = fmt.Sprintf("%s\n\n", answer)
 
 			userQA = append(userQA, question, answer)
 		}
 
 		var allQA string
 		for _, a := range userQA {
-			allQA += fmt.Sprintf("%s\n", a)
+			allQA += fmt.Sprintf("%s", a)
 		}
 
 		showMsg := "این شما و این جواب‌هایی که به سوالات مختلف دادید:\n\n"
