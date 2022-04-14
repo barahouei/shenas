@@ -188,30 +188,35 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			friendsIDList = append(friendsIDList, friend)
 		}
 
-		fl := make(map[string]string)
+		if len(friendsIDList) == 0 {
+			msg.Text = "هنوز دوستی به سوال‌های شما جواب نداده است."
+			msg.ReplyMarkup = backToEntry
+		} else {
+			fl := make(map[string]string)
 
-		for _, f := range friendsIDList {
-			err = db.QueryRow("SELECT first_name, last_name, nickname FROM users WHERE user_telegram_id=?", f).Scan(&user.firstname, &user.lastname, &user.nickname)
-			errorChecking(err)
+			for _, f := range friendsIDList {
+				err = db.QueryRow("SELECT first_name, last_name, nickname FROM users WHERE user_telegram_id=?", f).Scan(&user.firstname, &user.lastname, &user.nickname)
+				errorChecking(err)
 
-			var name string
-			if user.lastname == "" {
-				name = user.firstname
-			} else {
-				name = user.firstname + " " + user.lastname
+				var name string
+				if user.lastname == "" {
+					name = user.firstname
+				} else {
+					name = user.firstname + " " + user.lastname
+				}
+
+				if user.nickname != "" {
+					name = user.nickname
+				}
+
+				nf := strconv.FormatInt(f, 10)
+
+				fl[nf] = name
 			}
 
-			if user.nickname != "" {
-				name = user.nickname
-			}
-
-			nf := strconv.FormatInt(f, 10)
-
-			fl[nf] = name
+			msg.Text = "این‌ها دوستانی هستند که تا حالا به سوال‌های شما جواب دادن، برای دیدن جواب‌های هر کدوم می‌تونید انتخابش کنید."
+			msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendsAnswersButtons(fl)}
 		}
-
-		msg.Text = "این‌ها دوستانی هستند که تا حالا به سوال‌های شما جواب دادن، برای دیدن جواب‌های هر کدوم می‌تونید انتخابش کنید."
-		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendsAnswersButtons(fl)}
 	case "friendAnswers-" + friendID:
 		db := dbConnect()
 		defer db.Close()
