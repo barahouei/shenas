@@ -316,9 +316,6 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			err = db.QueryRow("SELECT COUNT(friend_answers.aid) FROM friend_answers JOIN user_answers ON user_answers.user_telegram_id = friend_answers.friend_telegram_id AND friend_answers.aid = user_answers.aid AND user_answers.user_telegram_id=? AND friend_answers.user_telegram_id=?", friendTelegramID, user.userTelegramID).Scan(&rightAnswers)
 			errorChecking(err)
 
-			msg.Text = fmt.Sprintf("سوالات تمام شد و شما به %d سوال جواب درست دادید.", rightAnswers)
-			msg.ReplyMarkup = backToEntry
-
 			var name string
 			if user.lastname == "" {
 				name = user.firstname
@@ -331,6 +328,9 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			if hasNickname {
 				name = user.nickname
 			}
+
+			msg.Text = fmt.Sprintf("سوالات تمام شد و به %d سوال از مجموع 17 سوال دوستت %s جواب درست دادی.", rightAnswers, name)
+			msg.ReplyMarkup = backToEntry
 
 			finishMessage := fmt.Sprintf("دوست شما %s به %dتا از سوال‌های شما جواب درست داد.", name, rightAnswers)
 			bot.Request(tgbotapi.NewMessage(friendTelegramID, finishMessage))
