@@ -289,6 +289,47 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		msg.Text = allQA
 		msg.ReplyMarkup = backToEntry
+	case "YourFriendsAnswers":
+		db := dbConnect()
+		defer db.Close()
+
+		friendsIDList := []int64{}
+
+		friends, err := db.Query("SELECT user_telegram_id FROM friend_answers WHERE friend_telegram_id=?", user.userTelegramID)
+		errorChecking(err)
+
+		for friends.Next() {
+			var friend int64
+
+			friends.Scan(&friend)
+
+			friendsIDList = append(friendsIDList, friend)
+		}
+
+		fl := make(map[string]string)
+
+		for _, f := range friendsIDList {
+			err = db.QueryRow("SELECT first_name, last_name, nickname FROM users WHERE user_telegram_id=?", f).Scan(&user.firstname, &user.lastname, &user.nickname)
+			errorChecking(err)
+
+			var name string
+			if user.lastname == "" {
+				name = user.firstname
+			} else {
+				name = user.firstname + " " + user.lastname
+			}
+
+			if user.nickname != "" {
+				name = user.nickname
+			}
+
+			nf := strconv.FormatInt(f, 10)
+
+			fl[nf] = name
+		}
+
+		msg.Text = "این‌ها دوستانی هستند که تا حالا به سوال‌های شما جواب دادن، برای دیدن جواب‌های هر کدوم می‌تونید انتخابش کنید."
+		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{friendsAnswersButtons(fl)}
 	case "myLink":
 		var name string
 		if user.lastname == "" {

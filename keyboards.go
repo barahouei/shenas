@@ -70,3 +70,20 @@ func friendInlineButtons(answers map[string]string, telegramID string) [][]tgbot
 
 	return btns
 }
+
+//This functions gets a map of answers and friends telegram ID and create buttons for them.
+func friendsAnswersButtons(answers map[string]string) [][]tgbotapi.InlineKeyboardButton {
+	var btns [][]tgbotapi.InlineKeyboardButton
+
+	for k, v := range answers {
+		key := "friendAnswers-" + k
+		btns = append(btns, []tgbotapi.InlineKeyboardButton{
+			{
+				Text:         v,
+				CallbackData: &key,
+			},
+		})
+	}
+
+	return btns
+}
