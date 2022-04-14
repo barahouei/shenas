@@ -98,17 +98,25 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			errorChecking(err)
 		}
 		var newQuestion string
+		var qid int
+		var numberOfQuestions int
 
-		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", 1).Scan(&newQuestion)
+		err = db.QueryRow("SELECT qid, question FROM questions WHERE qid=?", 1).Scan(&qid, &newQuestion)
 		errorChecking(err)
 
-		msg.Text = newQuestion
+		err = db.QueryRow("SELECT COUNT(qid) FROM questions").Scan(&numberOfQuestions)
+		errorChecking(err)
+
+		questionMessage := fmt.Sprintf("سوال %d از مجموع %d سوال:\n%s", qid, numberOfQuestions, newQuestion)
+		msg.Text = questionMessage
 
 		answers := answerWalker(1)
 		msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{inlineButtons(answers)}
 	case "ans" + ansid:
 		var questionID int
 		var newQuestion string
+		var qid int
+		var numberOfQuestions int
 		user := user
 		user.userTelegramID = update.CallbackQuery.From.ID
 
@@ -123,7 +131,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 		setAnswers(user.userTelegramID, questionID, aid)
 
-		err = db.QueryRow("SELECT question FROM questions WHERE qid=?", questionID+1).Scan(&newQuestion)
+		err = db.QueryRow("SELECT qid, question FROM questions WHERE qid=?", questionID+1).Scan(&qid, &newQuestion)
 		if err != nil {
 			msg.Text = "سوالات تمام شد، حالا می‌تونید به منوی اصلی برگردید."
 			msg.ReplyMarkup = backToEntry
@@ -135,7 +143,11 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			_, err = stmt.Exec(isAnswered, user.userTelegramID)
 			errorChecking(err)
 		} else {
-			msg.Text = newQuestion
+			err = db.QueryRow("SELECT COUNT(qid) FROM questions").Scan(&numberOfQuestions)
+			errorChecking(err)
+
+			questionMessage := fmt.Sprintf("سوال %d از مجموع %d سوال:\n%s", qid, numberOfQuestions, newQuestion)
+			msg.Text = questionMessage
 
 			answers := answerWalker(questionID + 1)
 			msg.ReplyMarkup = tgbotapi.InlineKeyboardMarkup{inlineButtons(answers)}
