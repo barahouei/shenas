@@ -162,7 +162,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			allQA += fmt.Sprintf("%s\n", a)
 		}
 
-		showMsg := "این شما و این جواب‌هایی که به سوالات مختلف دادید.\n\n"
+		showMsg := "این شما و این جواب‌هایی که به سوالات مختلف دادید:\n\n"
 		if allQA == "" {
 			allQA = "شما هنوز هیچ سوال و جوابی تعیین نکرده‌اید."
 		} else {
@@ -189,7 +189,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 
 		if len(friendsIDList) == 0 {
-			msg.Text = "هنوز دوستی به سوال‌های شما جواب نداده است."
+			msg.Text = "هنوز دوستی به سوال‌های شما جواب نداده."
 			msg.ReplyMarkup = backToEntry
 		} else {
 			fl := make(map[string]string)
@@ -253,7 +253,7 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			name = user.nickname
 		}
 
-		showMsg := fmt.Sprintf("دوستت %s این جواب‌ها رو به سوال‌های شما داده.\n\n", name)
+		showMsg := fmt.Sprintf("دوستت %s این جواب‌ها رو به سوال‌های شما داده:\n\n", name)
 		allQA = showMsg + allQA
 
 		msg.Text = allQA
