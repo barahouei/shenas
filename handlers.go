@@ -124,20 +124,37 @@ func commandHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		if user.userTelegramID == update.Message.From.ID {
 			msg.Text = "شما از لینک خودتان وارد شده‌اید."
 			msg.ReplyMarkup = backToEntry
-		} else if user.nickname == "" {
-			var name string
+		} else {
+			db := dbConnect()
+			defer db.Close()
 
-			if user.lastname == "" {
-				name = user.firstname
-			} else {
-				name = user.firstname + " " + user.lastname
+			var isAnswered bool
+
+			err := db.QueryRow("SELECT is_answered FROM check_is_answered WHERE friend_telegram_id=?", user.userTelegramID).Scan(&isAnswered)
+			if err != nil {
+				isAnswered = false
 			}
 
-			msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", name)
-			msg.ReplyMarkup = linkComingKeyboard(telegramID)
-		} else {
-			msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.nickname)
-			msg.ReplyMarkup = linkComingKeyboard(telegramID)
+			if isAnswered {
+				msg.Text = "شما قبلا به سوال‌های این دوستتان جواب داده‌اید."
+				msg.ReplyMarkup = backToEntry
+			} else {
+				if user.nickname == "" {
+					var name string
+
+					if user.lastname == "" {
+						name = user.firstname
+					} else {
+						name = user.firstname + " " + user.lastname
+					}
+
+					msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", name)
+					msg.ReplyMarkup = linkComingKeyboard(telegramID)
+				} else {
+					msg.Text = fmt.Sprintf("سلام شما از لینک %s آمده‌اید.\nلطفا برای ادامه یکی ازگزینه‌های زیر را انتخاب کنید.", user.nickname)
+					msg.ReplyMarkup = linkComingKeyboard(telegramID)
+				}
+			}
 		}
 
 	} else if update.Message.Command() == "start" {
@@ -348,6 +365,13 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 
 			finishMessage := fmt.Sprintf("دوست شما %s به %dتا از سوال‌های شما جواب درست داد.", name, rightAnswers)
 			bot.Request(tgbotapi.NewMessage(friendTelegramID, finishMessage))
+
+			isAnswered := true
+			stmt, err := db.Prepare("INSERT INTO check_is_answered SET user_telegram_id=?, friend_telegram_id=?, is_answered=?")
+			errorChecking(err)
+
+			_, err = stmt.Exec(user.userTelegramID, friendTelegramID, isAnswered)
+			errorChecking(err)
 		} else {
 			msg.Text = newQuestion
 
