@@ -378,7 +378,9 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 			}
 
 			finishMessage := fmt.Sprintf("دوست شما %s به %dتا از سوال‌های شما جواب درست داد.", name, rightAnswers)
-			bot.Request(tgbotapi.NewMessage(friendTelegramID, finishMessage))
+			f := tgbotapi.NewMessage(friendTelegramID, finishMessage)
+			f.ReplyMarkup = backToEntry
+			bot.Request(f)
 
 			isAnswered := true
 			stmt, err := db.Prepare("INSERT INTO check_is_friend_answered SET user_telegram_id=?, friend_telegram_id=?, is_answered=?")
