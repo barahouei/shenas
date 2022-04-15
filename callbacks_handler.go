@@ -355,7 +355,10 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 				name = friend.nickname
 			}
 
-			msg.Text = fmt.Sprintf("سوالات تمام شد و به %d سوال از مجموع 17 سوال دوستت %s جواب درست دادی.", rightAnswers, name)
+			err = db.QueryRow("SELECT COUNT(qid) FROM questions").Scan(&numberOfQuestions)
+			errorChecking(err)
+
+			msg.Text = fmt.Sprintf("سوالات تمام شد و به %d سوال از مجموع %d سوال دوستت %s جواب درست دادی.", rightAnswers, numberOfQuestions, name)
 			msg.ReplyMarkup = backToEntry
 
 			if user.lastname == "" {
