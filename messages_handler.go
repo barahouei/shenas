@@ -40,7 +40,12 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 				urlcheck = true
 			}
 
-			if urlcheck {
+			var secondURLCheck bool
+			if strings.Contains(user.nickname, ".") {
+				secondURLCheck = true
+			}
+
+			if urlcheck || secondURLCheck {
 				msg.Text = "اسم مستعاری که تعیین کردی مجاز نیست، لطفا یه اسم دیگه انتخاب کن."
 				msg.ReplyMarkup = backToEntry
 			} else {
