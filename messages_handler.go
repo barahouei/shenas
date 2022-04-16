@@ -11,7 +11,6 @@ import (
 func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	var user user
 	user.userTelegramID = update.Message.From.ID
-	var resetNickname bool
 
 	msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 	text := update.Message.Text
@@ -23,38 +22,66 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		user.nickname = splitedText[1]
 	}
 
-	if user.nickname == "" {
-		resetNickname = true
-	} else {
-		resetNickname = false
-	}
-
 	if strings.Contains(text, "-") && leftText == "nickname" {
 		db := dbConnect()
 		defer db.Close()
 
-		stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
-		errorChecking(err)
+		if user.nickname != "" {
+			if strings.Contains(user.nickname, "@") {
+				user.nickname = strings.TrimLeft(user.nickname, "@")
+			}
 
-		res, err := stmt.Exec(user.nickname, user.userTelegramID)
-		errorChecking(err)
+			var similarName string
+			err := db.QueryRow("SELECT username FROM users WHERE username=?", user.nickname).Scan(&similarName)
+			if err != nil {
+				var sameName string
 
-		affect, err := res.RowsAffected()
-		errorChecking(err)
+				err := db.QueryRow("SELECT nickname FROM users WHERE user_telegram_id=?", user.userTelegramID).Scan(&sameName)
+				errorChecking(err)
 
-		if affect > 0 {
-			if resetNickname {
+				if user.nickname == sameName {
+					sm := fmt.Sprintf("همین الان هم اسم مستعارت برابره با: %s", sameName)
+					msg.Text = sm
+					msg.ReplyMarkup = backToEntry
+				} else {
+					stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
+					errorChecking(err)
+
+					res, err := stmt.Exec(user.nickname, user.userTelegramID)
+					errorChecking(err)
+
+					affect, err := res.RowsAffected()
+					errorChecking(err)
+
+					if affect > 0 {
+						doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
+						msg.Text = doneMessage
+						msg.ReplyMarkup = backToEntry
+					}
+				}
+			} else {
+				msg.Text = "اسم مستعاری که تعیین کردی مجاز نیست، لطفا یه اسم دیگه انتخاب کن."
+				msg.ReplyMarkup = backToEntry
+			}
+		} else {
+			stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
+			errorChecking(err)
+
+			res, err := stmt.Exec(user.nickname, user.userTelegramID)
+			errorChecking(err)
+
+			affect, err := res.RowsAffected()
+			errorChecking(err)
+
+			if affect > 0 {
 				resetMessage := "اسم مستعارت حذف شد."
 				msg.Text = resetMessage
 				msg.ReplyMarkup = backToEntry
 			} else {
-				doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
-				msg.Text = doneMessage
+				resetMessage := "هنوز اسم مستعاری برای خودت تعیین نکردی که بخوای حذفش کنی."
+				msg.Text = resetMessage
 				msg.ReplyMarkup = backToEntry
 			}
-		} else {
-			msg.Text = "هنوز اسم مستعاری برای خودت تعیین نکردی که بخوای حذفش کنی."
-			msg.ReplyMarkup = backToEntry
 		}
 	} else {
 		msg.Text = "دستوری که وارد کردی اشتباست، شاید حرفی رو بزرگ و کوچیک وارد کردی یا جاانداختی."
