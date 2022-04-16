@@ -62,19 +62,24 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 						msg.Text = sm
 						msg.ReplyMarkup = backToEntry
 					} else {
-						stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
-						errorChecking(err)
-
-						res, err := stmt.Exec(user.nickname, user.userTelegramID)
-						errorChecking(err)
-
-						affect, err := res.RowsAffected()
-						errorChecking(err)
-
-						if affect > 0 {
-							doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
-							msg.Text = doneMessage
+						if len(user.nickname) > 255 {
+							msg.Text = "متاسفانه اسمی که انتخاب کردی خیییییییییللللللییییییییی طولانیه! یه اسم دیگه انتخاب کن."
 							msg.ReplyMarkup = backToEntry
+						} else {
+							stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
+							errorChecking(err)
+
+							res, err := stmt.Exec(user.nickname, user.userTelegramID)
+							errorChecking(err)
+
+							affect, err := res.RowsAffected()
+							errorChecking(err)
+
+							if affect > 0 {
+								doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
+								msg.Text = doneMessage
+								msg.ReplyMarkup = backToEntry
+							}
 						}
 					}
 				} else {
