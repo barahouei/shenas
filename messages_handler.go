@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -31,37 +32,50 @@ func messageHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 				user.nickname = strings.TrimLeft(user.nickname, "@")
 			}
 
-			var similarName string
-			err := db.QueryRow("SELECT username FROM users WHERE username=?", user.nickname).Scan(&similarName)
+			var urlcheck bool
+			_, err := url.ParseRequestURI(user.nickname)
 			if err != nil {
-				var sameName string
-
-				err := db.QueryRow("SELECT nickname FROM users WHERE user_telegram_id=?", user.userTelegramID).Scan(&sameName)
-				errorChecking(err)
-
-				if user.nickname == sameName {
-					sm := fmt.Sprintf("همین الان هم اسم مستعارت برابره با: %s", sameName)
-					msg.Text = sm
-					msg.ReplyMarkup = backToEntry
-				} else {
-					stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
-					errorChecking(err)
-
-					res, err := stmt.Exec(user.nickname, user.userTelegramID)
-					errorChecking(err)
-
-					affect, err := res.RowsAffected()
-					errorChecking(err)
-
-					if affect > 0 {
-						doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
-						msg.Text = doneMessage
-						msg.ReplyMarkup = backToEntry
-					}
-				}
+				urlcheck = false
 			} else {
+				urlcheck = true
+			}
+
+			if urlcheck {
 				msg.Text = "اسم مستعاری که تعیین کردی مجاز نیست، لطفا یه اسم دیگه انتخاب کن."
 				msg.ReplyMarkup = backToEntry
+			} else {
+				var similarName string
+				err = db.QueryRow("SELECT username FROM users WHERE username=?", user.nickname).Scan(&similarName)
+				if err != nil {
+					var sameName string
+
+					err := db.QueryRow("SELECT nickname FROM users WHERE user_telegram_id=?", user.userTelegramID).Scan(&sameName)
+					errorChecking(err)
+
+					if user.nickname == sameName {
+						sm := fmt.Sprintf("همین الان هم اسم مستعارت برابره با: %s", sameName)
+						msg.Text = sm
+						msg.ReplyMarkup = backToEntry
+					} else {
+						stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
+						errorChecking(err)
+
+						res, err := stmt.Exec(user.nickname, user.userTelegramID)
+						errorChecking(err)
+
+						affect, err := res.RowsAffected()
+						errorChecking(err)
+
+						if affect > 0 {
+							doneMessage := fmt.Sprintf("اسم مستعارت به %s تغییر کرد.", user.nickname)
+							msg.Text = doneMessage
+							msg.ReplyMarkup = backToEntry
+						}
+					}
+				} else {
+					msg.Text = "اسم مستعاری که تعیین کردی مجاز نیست، لطفا یه اسم دیگه انتخاب کن."
+					msg.ReplyMarkup = backToEntry
+				}
 			}
 		} else {
 			stmt, err := db.Prepare("UPDATE users SET nickname=? WHERE user_telegram_id=?")
