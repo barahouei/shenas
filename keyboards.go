@@ -87,6 +87,14 @@ func inlineButtons(opts map[string]string) [][]tgbotapi.InlineKeyboardButton {
 		q++
 	}
 
+	back := "BackToEntry"
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{
+		{
+			Text:         "برگشت به منوی اصلی",
+			CallbackData: &back,
+		},
+	})
+
 	return rows
 }
 
@@ -122,6 +130,14 @@ func friendInlineButtons(answers map[string]string, telegramID string) [][]tgbot
 		i++
 		q++
 	}
+
+	back := "BackToEntry"
+	rows = append(rows, []tgbotapi.InlineKeyboardButton{
+		{
+			Text:         "برگشت به منوی اصلی",
+			CallbackData: &back,
+		},
+	})
 
 	return rows
 }
