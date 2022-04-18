@@ -80,11 +80,21 @@ func setFriendAnswers(userTelegramID int64, friendTelegramID int64, questionID i
 	db := dbConnect()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO friend_answers SET user_telegram_id=?, friend_telegram_id=?, qid=?, aid=?")
-	errorChecking(err)
+	var qid, aid int
+	err := db.QueryRow("SELECT qid, aid FROM friend_answers WHERE user_telegram_id=? AND friend_telegram_id=? AND qid=?", userTelegramID, friendTelegramID, questionID).Scan(&qid, &aid)
+	if err != nil {
+		stmt, err := db.Prepare("INSERT INTO friend_answers SET user_telegram_id=?, friend_telegram_id=?, qid=?, aid=?")
+		errorChecking(err)
 
-	_, err = stmt.Exec(userTelegramID, friendTelegramID, questionID, answerID)
-	errorChecking(err)
+		_, err = stmt.Exec(userTelegramID, friendTelegramID, questionID, answerID)
+		errorChecking(err)
+	} else {
+		stmt, err := db.Prepare("UPDATE friend_answers SET aid=? WHERE user_telegram_id=? AND friend_telegram_id=? AND qid=?")
+		errorChecking(err)
+
+		_, err = stmt.Exec(answerID, userTelegramID, friendTelegramID, questionID)
+		errorChecking(err)
+	}
 }
 
 //This finction checks if the nickname wase set it returns the nickname a sets the value of hasNickname to true.
