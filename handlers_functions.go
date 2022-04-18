@@ -58,11 +58,21 @@ func setAnswers(userTelegramID int64, questionID int, answerID int) {
 	db := dbConnect()
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO user_answers SET user_telegram_id=?, qid=?, aid=?")
-	errorChecking(err)
+	var qid, aid int
+	err := db.QueryRow("SELECT qid, aid FROM user_answers WHERE user_telegram_id=? AND qid=?", userTelegramID, questionID).Scan(&qid, &aid)
+	if err != nil {
+		stmt, err := db.Prepare("INSERT INTO user_answers SET user_telegram_id=?, qid=?, aid=?")
+		errorChecking(err)
 
-	_, err = stmt.Exec(userTelegramID, questionID, answerID)
-	errorChecking(err)
+		_, err = stmt.Exec(userTelegramID, questionID, answerID)
+		errorChecking(err)
+	} else {
+		stmt, err := db.Prepare("UPDATE user_answers SET aid=? WHERE user_telegram_id=? AND qid=?")
+		errorChecking(err)
+
+		_, err = stmt.Exec(answerID, userTelegramID, questionID)
+		errorChecking(err)
+	}
 }
 
 //This function will add the friend answers to the friend table in the database according to IDs.
