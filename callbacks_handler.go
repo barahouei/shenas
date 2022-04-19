@@ -279,6 +279,9 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		msg.Text = allQA
 		msg.ReplyMarkup = backToEntry
 	case "myLink":
+		msg.Text = "لینک فعلیت رو می‌خوای یا می‌خوای لینک جدیدی برات ساخته بشه؟"
+		msg.ReplyMarkup = myLinkButtons
+	case "myCurrentLink":
 		var name string
 		if user.lastname == "" {
 			name = user.firstname
@@ -293,6 +296,24 @@ func callbackHandling(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
 			name, botUsername, linkGenerator(user.userTelegramID))
+		//FIXME: make first line of the message bold.
+		msg.Text = linkMessage
+		msg.ReplyMarkup = backToEntry
+	case "requestNewLink":
+		var name string
+		if user.lastname == "" {
+			name = user.firstname
+		} else {
+			name = user.firstname + " " + user.lastname
+		}
+
+		user.nickname = checkNickname(user.userTelegramID)
+
+		if hasNickname {
+			name = user.nickname
+		}
+		linkMessage := fmt.Sprintf("سلام، چطوری؟ %s هستم. نظرت چیه کمی بازی کنیم؟ فکر می‌کنی چقدر منو می‌شناسی؟\n می‌تونی به این سوالات جواب بدی تا مشخصه بشه چقدر من رو می‌شناسی و بعدش لینک خودت رو برام بفرستی تا من هم به سوال‌هات جواب بدم.\n https://t.me/%s?start=%s",
+			name, botUsername, newLinkGenerator(user.userTelegramID))
 		//FIXME: make first line of the message bold.
 		msg.Text = linkMessage
 		msg.ReplyMarkup = backToEntry

@@ -4,8 +4,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-//This function first checks if the user already has a custom link or not,
-//if there were a custom link in database the function will return it or if there were no custom link it creates a new one and return it.
+//This function checks if the user already has a custom link or not,
+//if there were a custom link in database the function will return it.
 func linkGenerator(userTelegramId int64) string {
 	var user user
 	user.userTelegramID = userTelegramId
@@ -19,4 +19,29 @@ func linkGenerator(userTelegramId int64) string {
 	errorChecking(err)
 
 	return link
+}
+
+//This function creates a new custom link for the user.
+func newLinkGenerator(userTelegramID int64) string {
+	user := user{}
+	user.userTelegramID = userTelegramID
+	user.link = token()
+
+	db := dbConnect()
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE users SET link=? WHERE user_telegram_id=?")
+	errorChecking(err)
+
+	res, err := stmt.Exec(user.link, user.userTelegramID)
+	errorChecking(err)
+
+	affect, err := res.RowsAffected()
+	errorChecking(err)
+
+	if affect > 0 {
+		return user.link
+	} else {
+		return ""
+	}
 }

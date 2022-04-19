@@ -183,3 +183,12 @@ func friendsAnswersButtons(friendsList map[string]string) [][]tgbotapi.InlineKey
 
 	return btns
 }
+
+var myLinkButtons = tgbotapi.NewInlineKeyboardMarkup(
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("لینک فعلی من", "myCurrentLink"),
+	),
+	tgbotapi.NewInlineKeyboardRow(
+		tgbotapi.NewInlineKeyboardButtonData("درخواست لینک جدید", "requestNewLink"),
+	),
+)
