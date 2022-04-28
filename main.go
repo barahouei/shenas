@@ -22,13 +22,30 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 
 	for update := range updates {
-		if update.Message != nil && update.Message.IsCommand() {
-			commandHandling(bot, update)
-		} else if update.CallbackQuery != nil {
-			callbackHandling(bot, update)
-		} else {
-			messageHandling(bot, update)
-		}
+		go SafelyHandle(bot, update)
 	}
 
+}
+
+//This function safely handles every request we have
+// and if any error happens it will recover from error and does not let bot break.
+func SafelyHandle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("*Somthing is wrong!", err)
+		}
+	}()
+
+	handleAll(bot, update)
+}
+
+//This functions handles all request.
+func handleAll(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if update.Message != nil && update.Message.IsCommand() {
+		commandHandling(bot, update)
+	} else if update.CallbackQuery != nil {
+		callbackHandling(bot, update)
+	} else {
+		messageHandling(bot, update)
+	}
 }
