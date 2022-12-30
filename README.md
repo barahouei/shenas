@@ -10,9 +10,9 @@
 
 - [MySQL](https://www.mysql.com)
 
-- [Go-MySQL-Driver](github.com/go-sql-driver/mysql)
+- [Go-MySQL-Driver](https://github.com/go-sql-driver/mysql)
 
-- [Telegram-Bot-API](github.com/go-telegram-bot-api/telegram-bot-api/v5)
+- [Telegram-Bot-API](https://github.com/go-telegram-bot-api/telegram-bot-api/v5)
 
 ## How to use
 
