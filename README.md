@@ -12,7 +12,7 @@
 
 - [Go-MySQL-Driver](https://github.com/go-sql-driver/mysql)
 
-- [Telegram-Bot-API](https://github.com/go-telegram-bot-api/telegram-bot-api/v5)
+- [Telegram-Bot-API](https://github.com/go-telegram-bot-api/telegram-bot-api)
 
 ## How to use
 
