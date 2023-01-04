@@ -1,6 +1,6 @@
 # Shenas
 
-**Shenas** is a telegram bot in Persian that lets a person set some questions and ask their friends to answer those questions in order to how much they know him/her.
+**Shenas** is a telegram bot in Persian that lets a person set some answers to default questions and ask their friends to answer those questions to see how much they know them.
 
 ## Requirements
 
