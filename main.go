@@ -12,7 +12,7 @@ func main() {
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
 	errorChecking(err)
 
-	bot.Debug = true
+	bot.Debug = false
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -27,7 +27,7 @@ func main() {
 
 }
 
-//This function safely handles every request we have
+// This function safely handles every request we have
 // and if any error happens it will recover from error and does not let bot break.
 func SafelyHandle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	defer func() {
@@ -39,7 +39,7 @@ func SafelyHandle(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	handleAll(bot, update)
 }
 
-//This functions handles all request.
+// This functions handles all request.
 func handleAll(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if update.Message != nil && update.Message.IsCommand() {
 		commandHandling(bot, update)
